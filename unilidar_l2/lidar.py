@@ -1,4 +1,4 @@
-"""High level Unitree L1 LiDAR reader."""
+"""High level Unitree L2 LiDAR reader."""
 
 from __future__ import annotations
 
@@ -67,12 +67,12 @@ class ReaderStats:
         return max(1e-9, time.monotonic() - self.started_at)
 
 
-class UnitreeL1:
-    """Read scans / IMU and send commands to a Unitree L1 LiDAR.
+class UnitreeL2:
+    """Read scans / IMU and send commands to a Unitree L2 LiDAR.
 
     Typical use::
 
-        lidar = UnitreeL1("COM8")
+        lidar = UnitreeL2("COM8")
         lidar.open()
         for ev in lidar.iter_events():
             if isinstance(ev, ScanEvent):
@@ -96,7 +96,7 @@ class UnitreeL1:
         self.max_pending_aux = 16
 
     # -- lifecycle ----------------------------------------------------
-    def open(self) -> "UnitreeL1":
+    def open(self) -> "UnitreeL2":
         self._port.open()
         self._parser.reset()
         self._pending_aux.clear()
@@ -106,7 +106,7 @@ class UnitreeL1:
     def close(self) -> None:
         self._port.close()
 
-    def __enter__(self) -> "UnitreeL1":
+    def __enter__(self) -> "UnitreeL2":
         return self.open()
 
     def __exit__(self, *exc) -> None:
@@ -220,7 +220,7 @@ def capture(port: str = "COM8", seconds: float = 3.0, baudrate: int = 2_000_000,
             out: Optional[str] = None) -> bytes:
     """Capture raw bytes from the LiDAR (useful for offline replay)."""
     chunks = []
-    with UnitreeL1(port, baudrate) as lidar:
+    with UnitreeL2(port, baudrate) as lidar:
         t0 = time.monotonic()
         while time.monotonic() - t0 < seconds:
             data = lidar._port.read(65536, 0.05)
@@ -238,7 +238,7 @@ def collect_points(port: str = "COM8", seconds: float = 3.0,
                    calibration: Optional[Calibration] = None) -> np.ndarray:
     """Collect a point cloud for `seconds`."""
     chunks: List[np.ndarray] = []
-    with UnitreeL1(port, baudrate, calibration) as lidar:
+    with UnitreeL2(port, baudrate, calibration) as lidar:
         t0 = time.monotonic()
         while time.monotonic() - t0 < seconds:
             for ev in lidar.poll(0.05):

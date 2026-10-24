@@ -1,12 +1,12 @@
-"""Command line tools for the Unitree L1 LiDAR.
+"""Command line tools for the Unitree L2 LiDAR.
 
 Examples::
 
-    python -m unilidar_l1 ports
-    python -m unilidar_l1 info  --port COM8
-    python -m unilidar_l1 ply   --port COM8 --seconds 5 -o scan.ply
-    python -m unilidar_l1 dump  --port COM8 --seconds 5 -o capture.bin
-    python -m unilidar_l1 replay capture.bin --info --ply scan.ply
+    python -m unilidar_l2 ports
+    python -m unilidar_l2 info  --port COM8
+    python -m unilidar_l2 ply   --port COM8 --seconds 5 -o scan.ply
+    python -m unilidar_l2 dump  --port COM8 --seconds 5 -o capture.bin
+    python -m unilidar_l2 replay capture.bin --info --ply scan.ply
 """
 
 from __future__ import annotations
@@ -20,7 +20,7 @@ from typing import List
 import numpy as np
 
 from .geometry import save_ply
-from .lidar import (ImuEvent, ScanEvent, TimeSyncEvent, UnitreeL1,
+from .lidar import (ImuEvent, ScanEvent, TimeSyncEvent, UnitreeL2,
                     VersionEvent, collect_points)
 from .protocol import MsgId
 from .serial_io import list_ports
@@ -37,7 +37,7 @@ def cmd_ports(args) -> int:
 
 
 def cmd_info(args) -> int:
-    lidar = UnitreeL1(args.port, args.baud)
+    lidar = UnitreeL2(args.port, args.baud)
     lidar.open()
     print(f"opened {args.port} @ {args.baud}")
     lidar.request_version()
@@ -100,7 +100,7 @@ def cmd_dump(args) -> int:
     total = 0
     t0 = time.monotonic()
     with open(args.out, "wb") as f:
-        with UnitreeL1(args.port, args.baud) as lidar:
+        with UnitreeL2(args.port, args.baud) as lidar:
             while time.monotonic() - t0 < args.seconds:
                 data = lidar._port.read(65536, 0.05)
                 if data:
@@ -111,7 +111,7 @@ def cmd_dump(args) -> int:
 
 
 def _replay_events(raw: bytes):
-    reader = UnitreeL1("", 2_000_000)
+    reader = UnitreeL2("", 2_000_000)
     return reader.process_bytes(raw)
 
 
@@ -119,7 +119,7 @@ def cmd_replay(args) -> int:
     with open(args.file, "rb") as f:
         raw = f.read()
     print(f"input: {args.file} ({len(raw)} bytes)")
-    reader = UnitreeL1("", 2_000_000)
+    reader = UnitreeL2("", 2_000_000)
     counts = collections.Counter()
     chunks: List[np.ndarray] = []
     version = None
@@ -164,8 +164,8 @@ def build_parser() -> argparse.ArgumentParser:
     common.add_argument("--port", default="COM8")
     common.add_argument("--baud", type=int, default=2_000_000)
 
-    p = argparse.ArgumentParser(prog="unilidar_l1",
-                                description="Unitree L1 LiDAR tools")
+    p = argparse.ArgumentParser(prog="unilidar_l2",
+                                description="Unitree L2 LiDAR tools")
     sub = p.add_subparsers(dest="cmd", required=True)
 
     sp = sub.add_parser("ports", help="list serial ports")

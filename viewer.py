@@ -1,4 +1,4 @@
-"""Unitree L1 LiDAR viewer (PySide6, software-rendered 3D).
+"""Unitree L2 LiDAR viewer (PySide6, software-rendered 3D).
 
 Features
 --------
@@ -26,13 +26,13 @@ import numpy as np
 from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtCore import Qt, Signal
 
-from unilidar_l1 import Calibration, UnitreeL1
-from unilidar_l1.geometry import save_ply
-from unilidar_l1.lidar import ImuEvent, ScanEvent, TimeSyncEvent, VersionEvent
-from unilidar_l1.protocol import LED_MODES, WORKING_MODE_NORMAL, WORKING_MODE_STANDBY
-from unilidar_l1.serial_io import list_ports
+from unilidar_l2 import Calibration, UnitreeL2
+from unilidar_l2.geometry import save_ply
+from unilidar_l2.lidar import ImuEvent, ScanEvent, TimeSyncEvent, VersionEvent
+from unilidar_l2.protocol import LED_MODES, WORKING_MODE_NORMAL, WORKING_MODE_STANDBY
+from unilidar_l2.serial_io import list_ports
 
-APP_TITLE = "Unitree L1 LiDAR Viewer"
+APP_TITLE = "Unitree L2 LiDAR Viewer"
 
 # ---------------------------------------------------------------------------
 # Colour maps
@@ -201,7 +201,7 @@ class LidarWorker(QtCore.QThread):
         self._commands.put(("record_stop",))
 
     # -- helpers ------------------------------------------------------
-    def _drain_commands(self, lidar: UnitreeL1 | None) -> None:
+    def _drain_commands(self, lidar: UnitreeL2 | None) -> None:
         while True:
             try:
                 cmd = self._commands.get_nowait()
@@ -256,7 +256,7 @@ class LidarWorker(QtCore.QThread):
     def _run_live(self) -> None:
         lidar = None
         try:
-            lidar = UnitreeL1(self.port, self.baud, self.calibration)
+            lidar = UnitreeL2(self.port, self.baud, self.calibration)
             lidar.open()
             self.state.emit(f"已连接 {self.port} @ {self.baud}")
             self.log.emit(f"串口已打开 {self.port} @ {self.baud}")
@@ -312,7 +312,7 @@ class LidarWorker(QtCore.QThread):
             return
         self.state.emit(f"回放 {os.path.basename(self.replay_path)}")
         self.log.emit(f"回放 {self.replay_path} ({len(raw)} 字节)")
-        reader = UnitreeL1("", self.baud, self.calibration)
+        reader = UnitreeL2("", self.baud, self.calibration)
         chunk = 6000
         pos = 0
         batch = []

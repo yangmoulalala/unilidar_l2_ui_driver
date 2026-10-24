@@ -1,7 +1,7 @@
-"""Unitree L1 LiDAR wire protocol (MAVLink v2).
+"""Unitree L2 LiDAR wire protocol (MAVLink v2).
 
 Protocol recovered by black-box analysis of the UART stream from a
-Unitree L1 LiDAR (USB CDC, 2,000,000 8N1).
+Unitree L2 LiDAR (USB CDC, 2,000,000 8N1).
 
 Framing is MAVLink v2 (0xFD) with the SysMavlink dialect used by the
 official unilidar_sdk.  Only the pieces needed to talk to the LiDAR are

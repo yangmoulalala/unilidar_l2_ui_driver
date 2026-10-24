@@ -1,11 +1,11 @@
-# unilidar_l1
+# unilidar_l2
 
-宇树 **Unitree L1** 激光雷达的串口协议库 + 上位机点云查看软件。
+宇树 **Unitree L2** 激光雷达的串口协议库 + 上位机点云查看软件。
 
 协议为 **MAVLink v2 @ 2,000,000 8N1**，完整逆向记录见
 [`PROTOCOL.md`](PROTOCOL.md)。
 
-- `unilidar_l1/` —— 纯 Python 库（只依赖 numpy，自带 Win32/POSIX 串口实现，**不需要 pyserial**）
+- `unilidar_l2/` —— 纯 Python 库（只依赖 numpy，自带 Win32/POSIX 串口实现，**不需要 pyserial**）
 - `viewer.py` —— PySide6 上位机，软件渲染 3D 点云（不依赖 OpenGL，远程桌面也能用）
 
 ## 安装依赖
@@ -39,7 +39,7 @@ python viewer.py
 - 右侧：固件版本、统计、IMU、扫描状态
 - 底部：日志
 
-没有硬件也可以点“回放 .bin”，选择 `samples/sample_l1.bin` 试一下。
+没有硬件也可以点“回放 .bin”，选择 `samples/sample_l2.bin` 试一下。
 
 颜色模式：高度 Z / 反射强度 / 距离 / 方位角 / 单色。
 
@@ -47,28 +47,28 @@ python viewer.py
 
 ```powershell
 # 列出串口
-python -m unilidar_l1 ports
+python -m unilidar_l2 ports
 
 # 读取设备信息（固件、IMU、扫描率等）
-python -m unilidar_l1 info --port COM8 --seconds 2
+python -m unilidar_l2 info --port COM8 --seconds 2
 
 # 采集点云保存为 PLY（CloudCompare / MeshLab 可直接打开）
-python -m unilidar_l1 ply --port COM8 --seconds 5 -o scan.ply
+python -m unilidar_l2 ply --port COM8 --seconds 5 -o scan.ply
 
 # 录制原始字节，供离线分析 / 回放
-python -m unilidar_l1 dump --port COM8 --seconds 5 -o capture.bin
+python -m unilidar_l2 dump --port COM8 --seconds 5 -o capture.bin
 
 # 离线解析录制文件（可顺便导出 PLY）
-python -m unilidar_l1 replay capture.bin --ply scan.ply
+python -m unilidar_l2 replay capture.bin --ply scan.ply
 ```
 
 ## 作为库使用
 
 ```python
 import numpy as np
-from unilidar_l1 import UnitreeL1, ScanEvent, ImuEvent, Calibration, save_ply
+from unilidar_l2 import UnitreeL2, ScanEvent, ImuEvent, Calibration, save_ply
 
-lidar = UnitreeL1("COM8", baudrate=2_000_000, calibration=Calibration())
+lidar = UnitreeL2("COM8", baudrate=2_000_000, calibration=Calibration())
 lidar.open()
 lidar.request_version()
 
@@ -93,9 +93,9 @@ if points:
 带超时的轮询写法（适合放进线程 / 定时器）：
 
 ```python
-from unilidar_l1 import UnitreeL1, ScanEvent
+from unilidar_l2 import UnitreeL2, ScanEvent
 
-with UnitreeL1("COM8") as lidar:
+with UnitreeL2("COM8") as lidar:
     lidar.request_version()
     while True:
         for ev in lidar.poll(0.05):
@@ -115,8 +115,8 @@ lidar.set_led_mode(8)       # 六段呼吸
 ## 目录结构
 
 ```
-unilidar_l1/
-├─ unilidar_l1/
+unilidar_l2/
+├─ unilidar_l2/
 │  ├─ protocol.py      # MAVLink v2 帧、CRC、消息编解码、命令
 │  ├─ geometry.py      # 角度 + 距离 -> XYZ，PLY 导出
 │  ├─ serial_io.py     # Win32 ctypes / POSIX termios 串口
@@ -151,5 +151,5 @@ unilidar_l1/
 
 ## 说明
 
-- 本库只支持 L1，不支持 L2。
+- 本库面向宇树 Unitree L2 激光雷达（USB CDC 串口链路）。
 - `request_type` / `cmd_type` 的完整用途未全部验证，未知命令请勿随意发送。
