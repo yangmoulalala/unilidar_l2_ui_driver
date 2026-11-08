@@ -214,8 +214,8 @@ class SerialPort:
             speed = getattr(termios, f"B{self.baudrate}", None)
             if speed is None:
                 raise SerialException(f"Baudrate {self.baudrate} not supported")
-            termios.cfsetispeed(attrs, speed)
-            termios.cfsetospeed(attrs, speed)
+            attrs[4] = speed  # ispeed (Python termios has no cfsetispeed)
+            attrs[5] = speed  # ospeed
             termios.tcsetattr(fd, termios.TCSANOW, attrs)
             termios.tcflush(fd, termios.TCIOFLUSH)
         except Exception:
